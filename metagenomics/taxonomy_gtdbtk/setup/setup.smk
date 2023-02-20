@@ -2,12 +2,12 @@ VERSION = "207_v2" # check url in download, if changing version!
 CONTAINER = "gtdbtk.sif"
 GTDBTK_REF_FOLDER = "gtdbtk_data"
 GTDBTK_REF = f"{GTDBTK_REF_FOLDER}/taxonomy/gtdb_taxonomy.tsv"
-GTDBTK_REF_DL = f"temp.{GTDBTK_REF}.tar.gz"
+GTDBTK_REF_DL = f"gtdbtk_r{VERSION}_data.tar.gz"
 
 rule singularity:
     input:
         CONTAINER,
-        GTDBTK_REF,
+        GTDBTK_REF
 
 rule get_image:
     output:
@@ -21,12 +21,9 @@ rule get_image:
 rule download_gtdbtk_refdata:
     output:
         GTDBTK_REF_DL
-    params:
-        original_name=f"gtdbtk_r{VERSION}_data.tar.gz"
     shell:
         """
-        wget --quiet https://data.gtdb.ecogenomic.org/releases/release207/207.0/auxillary_files/{params.original_name}
-        mv {params.original_name} {output}
+        wget --quiet https://data.gtdb.ecogenomic.org/releases/release207/207.0/auxillary_files/{output}
         """
 
 rule extract_gtdbtk_refdata:
@@ -35,7 +32,7 @@ rule extract_gtdbtk_refdata:
     output:
         GTDBTK_REF
     params:
-        folder=GTDBTK_REF_FOLDER
+        folder=GTDBTK_REF_FOLDER,
         release=f"release{VERSION}"
     shell:
         """
@@ -43,4 +40,4 @@ rule extract_gtdbtk_refdata:
         && cd {params.folder} \
         && mv {params.release}/* ./
         && rmdir {params.release}
-        """ % VERSION
+        """
