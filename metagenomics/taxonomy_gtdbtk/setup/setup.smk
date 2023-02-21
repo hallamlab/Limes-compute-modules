@@ -14,7 +14,7 @@ rule get_image:
         CONTAINER
     shell:
         """
-        singularity pull {output} library://edwardbirdlab/bara/gtdbtk_2
+        singularity build {output} docker://https://quay.io/repository/txyliu/gtdbtk
         """
 
 # check url if change version
