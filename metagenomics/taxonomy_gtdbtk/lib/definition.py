@@ -2,11 +2,11 @@ import os
 from pathlib import Path
 from limes_x import ModuleBuilder, Item, JobContext, JobResult
 
-BIN         = Item('metagenomic bin')
+SAMPLE      = Item('sample')
+BINS        = Item('metagenomic bin')
 
 GTDBTK_WS   = Item('gtdbtk work')
 GTDBTK_TAX  = Item('gtdbtk taxonomy table')
-# ANNOTATIONS = Item('genomic annotations')
 
 CONTAINER   = 'gtdbtk.sif'
 GTDBTK_DB   = 'gtdbtk_data'
@@ -15,25 +15,66 @@ def example_procedure(context: JobContext) -> JobResult:
     manifest = context.manifest
     params = context.params
     ref = params.reference_folder
+
+    TEMP_PREFIX = "temp"
+    temp_dir = context.output_folder.joinpath(f"{TEMP_PREFIX}.ws")
+    container = ref.joinpath(CONTAINER)
+
+    sample = manifest[SAMPLE]
+    assert isinstance(sample, str), f"expected str for sample, got {sample}"
+
+    bin_paths = manifest[BINS]
+    if not isinstance(bin_paths, list): bin_paths = [bin_paths]
+    bin_folder = context.output_folder.joinpath(f"{TEMP_PREFIX}.bin_input")
+    out_folder = context.output_folder.joinpath(f"{sample}_gtdbtk")
+
+    context.shell(f"mkdir -p {bin_folder}")
+    seen_names = {}
+    ext = "fa"
+    for p in bin_paths:
+        assert isinstance(p, Path), f"expected path, but got: {p}"
+        toks = str(p.name).split('.')
+        fname = ".".join(toks[:-1])
+        if fname in seen_names:
+            i = seen_names[fname]+1
+            seen_names[fname] = i
+            fname = f"{fname}_{i}"
+        else:
+            seen_names[fname] = 1
+
+        name = f"{sample}-{fname}.{ext}"
+        context.shell(f"""\
+            cp {p} {bin_folder.joinpath(name)}
+        """)
+
     binds = [
-        f"{ref}:/ref",
+        f"{ref.joinpath(GTDBTK_DB)}:/ref",
+        f"{temp_dir}:/gtdbtk_temp",
         f"./:/ws",
     ]
 
-    bin_path = manifest[BIN]
-    assert isinstance(bin_path, Path), f"expected only one bin {bin_path}"
-    toks = str(bin_path).split('/')
-    bin_folder = '/'.join(toks[:-1])
-    fname = '.'.join(toks[-1].split('.')[:-1])
-    out_folder = context.output_folder.joinpath(fname)
-
     code = context.shell(f"""\
-        singularity run -B {",".join(binds)} {CONTAINER} \
-        gtdbtk classify_wf -x fa --cpus {params.threads} --pplacer_cpus {1} \
-            --tmpdir /ws/tmp \
+        mkdir -p {temp_dir}
+        singularity run -B {",".join(binds)} {container} \
+        gtdbtk classify_wf -x {ext} \
+            --cpus {params.threads} --pplacer_cpus {int(min(params.threads, params.mem_gb//(40+1)))} \
+            --force --tmpdir /gtdbtk_temp \
             --genome_dir /ws/{bin_folder} \
             --out_dir /ws/{out_folder}
     """)
+
+    classify_out = out_folder.joinpath("classify")
+    summary_files = os.listdir(classify_out) if classify_out.exists() else []
+    summary_files = [classify_out.joinpath(f) for f in summary_files if f.endswith("summary.tsv")]
+    if len(summary_files) == 0:
+        context.shell(f"find {out_folder}")
+        return JobResult(
+            exit_code = 1,
+            error_message = f"didn't finish; no summary tables produced: {summary_files}",
+                    manifest = {
+            GTDBTK_WS: out_folder,
+            },
+        )
 
     classify_out = context.output_folder.joinpath("classify")
     file_candidates = os.listdir(classify_out) if classify_out.exists() else []
@@ -47,20 +88,31 @@ def example_procedure(context: JobContext) -> JobResult:
             },
         )
 
+    summary = context.output_folder.joinpath(f"{sample}-bins.tax.tsv")
+    context.shell(f"""\
+        cp {file_candidates[0]} {summary}
+    """)
+
+    #clean up
+    context.shell(f"""\
+        cd {context.output_folder} && rm -r {TEMP_PREFIX}*
+    """)
+
     return JobResult(
         exit_code = code,
         manifest = {
             GTDBTK_WS: out_folder,
-            GTDBTK_TAX: file_candidates[0],
+            GTDBTK_TAX: summary,
         },
     )
 
 MODULE = ModuleBuilder()\
     .SetProcedure(example_procedure)\
-    .AddInput(BIN, groupby=None)\
+    .AddInput(SAMPLE)\
+    .AddInput(BINS, groupby=SAMPLE)\
     .PromiseOutput(GTDBTK_WS)\
     .PromiseOutput(GTDBTK_TAX)\
-    .SuggestedResources(threads=1, memory_gb=64)\
-    .Requires({GTDBTK_DB})\
+    .SuggestedResources(threads=2, memory_gb=88)\
+    .Requires({CONTAINER, GTDBTK_DB})\
     .SetHome(__file__, name=None)\
     .Build()
