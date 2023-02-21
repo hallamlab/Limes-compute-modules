@@ -46,6 +46,9 @@ def example_procedure(context: JobContext) -> JobResult:
         context.shell(f"""\
             cp {p} {bin_folder.joinpath(name)}
         """)
+    context.shell(f"""\
+        ls -lh {bin_folder}
+    """)
 
     binds = [
         f"{ref.joinpath(GTDBTK_DB)}:/ref",
@@ -63,26 +66,13 @@ def example_procedure(context: JobContext) -> JobResult:
             --out_dir /ws/{out_folder}
     """)
 
-    classify_out = out_folder.joinpath("classify")
-    summary_files = os.listdir(classify_out) if classify_out.exists() else []
-    summary_files = [classify_out.joinpath(f) for f in summary_files if f.endswith("summary.tsv")]
-    if len(summary_files) == 0:
-        context.shell(f"find {out_folder}")
-        return JobResult(
-            exit_code = 1,
-            error_message = f"didn't finish; no summary tables produced: {summary_files}",
-                    manifest = {
-            GTDBTK_WS: out_folder,
-            },
-        )
-
     classify_out = context.output_folder.joinpath("classify")
     file_candidates = os.listdir(classify_out) if classify_out.exists() else []
     file_candidates = [classify_out.joinpath(f) for f in file_candidates if f.endswith("summary.tsv")]
-    if len(file_candidates) == 0:
+    if len(file_candidates) != 1:
         return JobResult(
             exit_code = 1,
-            error_message = "didn't finish; no summary table produced",
+            error_message = f"didn't finish; no summary table produced: {file_candidates}",
                     manifest = {
             GTDBTK_WS: out_folder,
             },
