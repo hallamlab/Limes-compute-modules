@@ -66,7 +66,7 @@ def example_procedure(context: JobContext) -> JobResult:
             --out_dir /ws/{out_folder}
     """)
 
-    classify_out = context.output_folder.joinpath("classify")
+    classify_out = out_folder.joinpath("classify")
     file_candidates = os.listdir(classify_out) if classify_out.exists() else []
     file_candidates = [classify_out.joinpath(f) for f in file_candidates if f.endswith("summary.tsv")]
     if len(file_candidates) != 1:
