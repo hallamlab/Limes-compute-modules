@@ -10,6 +10,7 @@ DRAM_WS     = Item('dram work')
 
 CONTAINER   = "dram-annotations.sif"
 DRAM_DBS    = "dram_dbs"
+MAG_ANNOTATOR= "mag_annotator"
 
 def procedure(context: JobContext) -> JobResult:
     P = context.params
@@ -41,21 +42,38 @@ def procedure(context: JobContext) -> JobResult:
         assert P.mem_gb >= 220, f"not enough memory given"
 
     binds = [
+        f"{REF.joinpath(MAG_ANNOTATOR)}:/opt/conda/envs/dram/lib/python3.10/site-packages/mag_annotator",
         f"{REF.joinpath(DRAM_DBS)}:/ref",
         f"./:/ws",
     ]
 
-    code = context.shell(f"""\
+    context.shell(f"""\
         singularity run -B {",".join(binds)} {container} \
             DRAM.py annotate --threads {P.threads} \
             --min_contig_size 2000 --prodigal_mode meta {use_uniref} \
             -i '/ws/{inputs}/*.{ext}' -o /ws/{WS}
     """)
 
+    dram_tsv = WS.joinpath('annotations.tsv')
+    if not dram_tsv.exists():
+        return JobResult(
+            exit_code = 1,
+            manifest = {
+                DRAM_WS: WS,
+            },
+        )
+    else:
+        ANNOT_OUT = OUT.joinpath(f'{sample}.annot.tsv')
+        context.shell(f"""\
+            cp {dram_tsv} {ANNOT_OUT}
+        """)
+
+    context.shell(f"rm -r {OUT}/{TEMP_PREFIX}*")
+
     return JobResult(
-        exit_code = code,
+        exit_code = 0,
         manifest = {
-            ANNOTATIONS: [], # todo
+            ANNOTATIONS: ANNOT_OUT,
             DRAM_WS: WS,
         },
     )
@@ -64,8 +82,11 @@ MODULE = ModuleBuilder()\
     .SetProcedure(procedure)\
     .AddInput(SAMPLE,)\
     .AddInput(ASSEMBLIES, groupby=SAMPLE)\
+    .AddInput(USE_UNIREF, groupby=SAMPLE)\
     .PromiseOutput(ANNOTATIONS)\
-    .Requires({DRAM_DBS, CONTAINER})\
-    .SuggestedResources(threads=16, memory_gb=58)\
+    .Requires({CONTAINER, DRAM_DBS, MAG_ANNOTATOR})\
+    .SuggestedResources(threads=20, memory_gb=220)\
     .SetHome(__file__, name=None)\
     .Build()
+
+    # .SuggestedResources(threads=16, memory_gb=58)\
