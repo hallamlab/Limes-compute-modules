@@ -10,8 +10,9 @@ CHECKM_STATS= Item('checkm stats')
 CONTAINER   = 'checkm.sif'
 CHECKM_DB   = 'checkm_data_2015_01_16'
 
-# about 10mins on bacterial genome, 1thread / 48ram
+# about 2mins on 3MB genome, 1thread / 48ram
 def _procedure(context: JobContext) -> JobResult:
+    REDUCE_TREE = False # reduces memory requirement from 40GB to 14GB
     manifest = context.manifest
     params = context.params
     ref = params.reference_folder
@@ -33,11 +34,12 @@ def _procedure(context: JobContext) -> JobResult:
 
     # https://github.com/Ecogenomics/CheckM/wiki/Genome-Quality-Commands
     code = context.shell(f"""\
+        PYTHONPATH=""
         mkdir -p {in_folder} {tmp_folder}
         cp -L {bin} {in_folder}
         singularity run -B {",".join(binds)} {container} \
         checkm lineage_wf -x {ext} -t {params.threads} \
-            --tmpdir /ws/{tmp_folder} \
+            --tmpdir /ws/{tmp_folder} {"--reduced_tree" if REDUCE_TREE else ""} \
             /ws/{in_folder} /ws/{out_folder}
         rm -r {in_folder} {tmp_folder}
         singularity run -B {",".join(binds)} {container} \
