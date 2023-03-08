@@ -4,6 +4,7 @@ from limes_x import ModuleBuilder, Item, JobContext, JobResult
 
 ACCESSION   = Item('sra accession')
 RAW         = Item('sra raw')
+USERNAME    = Item('username')
 
 EXTRACTED   = Item('sra extracted')
 SNAPSHOT    = Item('folder snapshot')
@@ -32,8 +33,11 @@ def procedure(context: JobContext) -> JobResult:
         cp -r {raw_sra}/* {inputs_dir.joinpath(accession)}/
     """)
 
+    user = M[USERNAME]
+    assert isinstance(user, str)
+
     binds = [
-        f"{fake_home}:/home/{os.getlogin()}",
+        f"{fake_home}:/home/{user}",
         f"{inputs_dir}:/inputs",
         f"{OUT_DIR}:/ws",
     ]
