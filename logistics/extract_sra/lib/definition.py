@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 from limes_x import ModuleBuilder, Item, JobContext, JobResult
 
@@ -63,10 +62,10 @@ def procedure(context: JobContext) -> JobResult:
             && rm -r {accession}
         """)
 
-    # clean up
-    context.shell(f"""\
-        rm -r {OUT_DIR.joinpath(TEMP_PREFIX+"*")}
-    """)
+        # clean up
+        context.shell(f"""\
+            rm -r {OUT_DIR.joinpath(TEMP_PREFIX+"*")}
+        """)
 
     return JobResult(
         exit_code = code,
@@ -80,6 +79,7 @@ MODULE = ModuleBuilder()\
     .SetProcedure(procedure)\
     .AddInput(ACCESSION, groupby=ACCESSION)\
     .AddInput(RAW, groupby=ACCESSION)\
+    .AddInput(USERNAME, groupby=ACCESSION)\
     .PromiseOutput(EXTRACTED)\
     .Requires({CONTAINER})\
     .SuggestedResources(threads=2, memory_gb=16)\
