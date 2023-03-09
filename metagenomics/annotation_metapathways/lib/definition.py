@@ -1,10 +1,12 @@
+import os
 from pathlib import Path
 from limes_x import ModuleBuilder, Item, JobContext, JobResult
 
+SAMPLE      = Item('sample')
 BIN         = Item('metagenomic bin')
 
 MP3_WS      = Item('metapathways work')
-# ANNOTATIONS = Item('genomic annotations')
+ANNOTATIONS = Item('genomic annotation')
 
 CONTAINER   = 'metapathways.sif'
 MP3_DB      = 'metapathways_db'
@@ -19,30 +21,64 @@ def example_procedure(context: JobContext) -> JobResult:
         f"./:/ws",
     ]
 
-    bin_path = manifest[BIN]
-    assert isinstance(bin_path, Path), f"expected only one bin {bin_path}"
-    fname = '.'.join(str(bin_path).split('/')[-1].split('.')[:-1])
-    out_name = f"{fname}_mp3"
+    container = ref.joinpath(CONTAINER)
+
+    TEMP_PREFIX = "temp"
+    input_dir = context.output_folder.joinpath(f"{TEMP_PREFIX}.inputs")
+    context.shell(f"mkdir -p {input_dir}")
+
+    IN_PREFIX = "in-"
+    bin_paths = manifest[BIN]
+    if not isinstance(bin_paths, list): bin_paths = [bin_paths]
+    for p in bin_paths:
+        assert isinstance(p, Path), f"expected a path for ea bin, got {p}"
+        toks = f"{IN_PREFIX}{p.name}".split('.') # mp3 requires that it start with a letter
+        fname = '_'.join(toks[:-1]) # no "." in name
+        ext = toks[-1]
+        context.shell(f"cp {p} {input_dir}/{fname}.{ext}")
+
+    sample = manifest[SAMPLE]
+    assert isinstance(sample, str), f"expected str for sample, got {sample}"
+    out_name = f"{sample}_mp3ws"
     out_folder = context.output_folder.joinpath(out_name)
 
     code = context.shell(f"""\
-        singularity exec -B {",".join(binds)} {CONTAINER} \
+        singularity run -B {",".join(binds)} {container} \
         MetaPathways -p /ref/{MP3_PARAMS} -d /ref/{MP3_DB} -t {params.threads} -v \
-            -i /ws/{bin_path}/ \
+            -i /ws/{input_dir}/ \
             -o /ws/{out_folder}
+        cd {context.output_folder} && rm -r {TEMP_PREFIX}*
     """)
+
+    annotations = []
+    for out_dir in os.listdir(out_folder):
+        out_path = f"{out_folder}/{out_dir}"
+        if not os.path.isdir(out_path): continue
+
+        result = context.output_folder.joinpath(out_dir.replace(IN_PREFIX, "")+"_mp3")
+        annotations.append(result)
+        _code = context.shell(f"""\
+            mkdir -p {result}
+            cp -r {out_path}/results/* {result}/
+            cp {out_path}/ptools/0.pf {result}/ptools_input.pf
+        """)
+        code = max(1, _code+code)
 
     return JobResult(
         exit_code = code,
         manifest = {
-            MP3_WS: out_folder
+            MP3_WS: out_folder,
+            ANNOTATIONS: annotations,
         },
     )
 
 MODULE = ModuleBuilder()\
     .SetProcedure(example_procedure)\
-    .AddInput(BIN)\
+    .AddInput(SAMPLE)\
+    .AddInput(BIN, groupby=SAMPLE)\
     .PromiseOutput(MP3_WS)\
+    .PromiseOutput(ANNOTATIONS)\
     .Requires({CONTAINER, MP3_DB, MP3_PARAMS})\
+    .SuggestedResources(threads=4, memory_gb=48)\
     .SetHome(__file__, name=None)\
     .Build()
