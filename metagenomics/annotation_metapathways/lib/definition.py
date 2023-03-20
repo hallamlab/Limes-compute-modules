@@ -39,7 +39,7 @@ def example_procedure(context: JobContext) -> JobResult:
 
     sample = manifest[SAMPLE]
     assert isinstance(sample, str), f"expected str for sample, got {sample}"
-    out_name = f"{sample}_mp3ws"
+    out_name = f"{sample}_mp3ws".replace(" ", "_")
     out_folder = context.output_folder.joinpath(out_name)
 
     code = context.shell(f"""\
