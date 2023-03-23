@@ -5,6 +5,14 @@ from limes_x import ModuleBuilder, Item, JobContext, JobResult
 SAMPLE = Item('sample')
 READS = Item('metagenomic raw reads')
 READ_TYPE = Item('metagenomic read type')
+# READ_TYPE is "<platform>:<type>"
+# where <platform> is one of:
+# - "pacbio"
+# - "illumina"
+# and <type> is one of:
+# - "paired_end"
+# - "interleaved"
+# - "single_end"
 
 ASM = Item('metagenomic assembly')
 ASM_WS = Item(f'flye or megahit work')
