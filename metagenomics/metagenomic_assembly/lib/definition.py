@@ -5,11 +5,11 @@ from limes_x import ModuleBuilder, Item, JobContext, JobResult
 SAMPLE = Item('sample')
 READS = Item('metagenomic raw reads')
 READ_TYPE = Item('metagenomic read type')
-# READ_TYPE is "<platform>:<type>"
-# where <platform> is one of:
-# - "pacbio"
-# - "illumina"
-# and <type> is one of:
+# READ_TYPE is "<type>:<layout>"
+# where <type> is one of:
+# - "long"
+# - "short"
+# and <layout> is one of:
 # - "paired_end"
 # - "interleaved"
 # - "single_end"
@@ -59,8 +59,8 @@ def meta_flye(context: JobContext) -> JobResult:
         """
 
     switch = {
-        "pacbio": _flye,
-        "illumina": _megahit
+        "long": _flye,
+        "short": _megahit
     }
     assert read_source in switch, f"unknown read source {read_source}"
     exe_cmd = switch[read_source](reads)
