@@ -6,7 +6,8 @@ BACKBONE    = Item("fosmid vector backbone sequence")
 DEFAULT_BACKBONE = "pcc1"
 READS       = Item("fosmid reads")
 
-FW_OUT      = Item("fosmid pool population estimate csv")
+FW_J        = Item("fosmid pool junctions")
+FW_HITS     = Item("fosmid pool hits")
 
 CONTAINER   = "foswalk.sif"
 
@@ -51,19 +52,21 @@ def procedure(context: JobContext) -> JobResult:
         rm -rf {context.output_folder.joinpath(TEMP_PREFIX)}*
         """)
 
-    out_files = [f for f in os.listdir(context.output_folder) if f.endswith("foswalk.csv")]
     return JobResult(
         exit_code =code,
         manifest = {
-            FW_OUT: Path(context.output_folder.joinpath(out_files[0])),
+            FW_J: context.output_folder.joinpath(f"{reads.name}_full.fasta"),
+            FW_HITS: context.output_folder.joinpath(f"{reads.name}_hits.fasta"),
         },
     )
 
 MODULE = ModuleBuilder()\
     .SetProcedure(procedure)\
-    .AddInput(BACKBONE).AddInput(READS)\
-    .PromiseOutput(FW_OUT)\
+    .AddInput(BACKBONE)\
+    .AddInput(READS)\
+    .PromiseOutput(FW_J)\
+    .PromiseOutput(FW_HITS)\
     .Requires({CONTAINER})\
-    .SuggestedResources(threads=4, memory_gb=8)\
+    .SuggestedResources(threads=1, memory_gb=8)\
     .SetHome(__file__)\
     .Build()
