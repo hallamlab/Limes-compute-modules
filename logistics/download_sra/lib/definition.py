@@ -37,6 +37,11 @@ def procedure(context: JobContext) -> JobResult:
                 prefetch --output-directory /ws/ {acc}
         """)
 
+    # clean up
+    context.shell(f"""\
+        rm -r {OUT_DIR.joinpath(TEMP_PREFIX+"*")}
+    """)
+
     return JobResult(
         manifest = {
             RAW: [OUT_DIR.joinpath(acc) for acc in accession_list]

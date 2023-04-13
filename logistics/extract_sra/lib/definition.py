@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from limes_x import ModuleBuilder, Item, JobContext, JobResult
 
@@ -6,10 +7,9 @@ RAW         = Item('sra raw')
 USERNAME    = Item('username')
 
 EXTRACTED   = Item('sra extracted')
-SNAPSHOT    = Item('folder snapshot')
 
 CONTAINER   = 'sratk.sif'
-# and pigz...
+PIGZ        = 'pigz'
 
 def procedure(context: JobContext) -> JobResult:
     P = context.params
@@ -17,6 +17,7 @@ def procedure(context: JobContext) -> JobResult:
     OUT_DIR = context.output_folder
     TEMP_PREFIX = "temp"
     container = P.reference_folder.joinpath(CONTAINER)
+    pigz = P.reference_folder.joinpath(PIGZ)
 
     fake_home = OUT_DIR.joinpath(f"{TEMP_PREFIX}.home")
     context.shell(f"mkdir -p {fake_home}")
@@ -52,15 +53,16 @@ def procedure(context: JobContext) -> JobResult:
                 fastq-dump --outdir /ws/{accession} /inputs/{accession} 
         """)
 
-    out_file = f"{accession}.tar.gz"
-    snapshot = f"{accession}.snapshot.txt"
+    out_files = []
     if code == 0:
-        context.shell(f"""\
-            cd {OUT_DIR}
-            ls -lh {accession} > {snapshot}
-            tar -cf - {accession} | pigz -7 -p {P.threads} >{out_file}\
-            && rm -r {accession}
-        """)
+        extracted_out_dir = OUT_DIR.joinpath(accession)
+        for f in os.listdir(extracted_out_dir):
+            out_file = f"{f}.tar.gz"
+            context.shell(f"""\
+                cd {extracted_out_dir}
+                tar -cf - {f} | {pigz} -7 -p {P.threads} >{out_file}
+            """)
+            out_files.append(extracted_out_dir.joinpath(out_file))
 
         # clean up
         context.shell(f"""\
@@ -70,8 +72,7 @@ def procedure(context: JobContext) -> JobResult:
     return JobResult(
         exit_code = code,
         manifest = {
-            EXTRACTED: OUT_DIR.joinpath(out_file),
-            SNAPSHOT: OUT_DIR.joinpath(snapshot),
+            EXTRACTED: out_files,
         },
     )
 
