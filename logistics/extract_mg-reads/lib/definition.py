@@ -114,7 +114,7 @@ MODULE = ModuleBuilder()\
     .AddInput(USERNAME,     groupby=SAMPLE)\
     .AddInput(READ_TYPE,    groupby=SAMPLE)\
     .PromiseOutput(READS)\
-    .Requires({CONTAINER})\
+    .Requires({CONTAINER, PIGZ})\
     .SuggestedResources(threads=2, memory_gb=16)\
     .SetHome(__file__, name=None)\
     .Build()
