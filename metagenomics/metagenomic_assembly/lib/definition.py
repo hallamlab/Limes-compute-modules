@@ -2,9 +2,9 @@ import os
 from pathlib import Path
 from limes_x import ModuleBuilder, Item, JobContext, JobResult
 
-SAMPLE = Item('sra accession')
-READS = Item('metagenomic raw reads')
-READ_TYPE = Item('metagenomic read type')
+SAMPLE      = Item('sra accession')
+READS       = Item('metagenomic gzipped reads')
+READ_TYPE   = Item('metagenomic read type')
 # READ_TYPE is "<type>:<layout>"
 # where <type> is one of:
 # - "long"
@@ -16,6 +16,7 @@ READ_TYPE = Item('metagenomic read type')
 
 ASM = Item('metagenomic assembly')
 ASM_WS = Item(f'flye or megahit work')
+
 FLYE = 'flye.sif'
 MEGAHIT = 'megahit.sif'
 

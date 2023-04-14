@@ -15,7 +15,7 @@ READ_TYPE   = Item('metagenomic read type')
 # - "interleaved"
 # - "single_end"
 
-READS       = Item('metagenomic raw reads')
+READS       = Item('metagenomic gzipped reads')
 
 CONTAINER   = 'sratk.sif'
 PIGZ        = 'pigz'
