@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 from limes_x import ModuleBuilder, Item, JobContext, JobResult
 
-SAMPLE = Item('sample')
+SAMPLE = Item('sra accession')
 READS = Item('metagenomic raw reads')
 READ_TYPE = Item('metagenomic read type')
 # READ_TYPE is "<type>:<layout>"

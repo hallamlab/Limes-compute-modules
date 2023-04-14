@@ -4,7 +4,7 @@ from limes_x import ModuleBuilder, Item, JobContext, JobResult
 
 # split this...
 
-SAMPLE      = Item('sample')
+SAMPLE      = Item('sra accession')
 READS       = Item('metagenomic raw reads')
 READ_TYPE   = Item('metagenomic read type')
 ASM         = Item('metagenomic assembly')
@@ -12,7 +12,6 @@ ASM         = Item('metagenomic assembly')
 BIN         = Item('metagenomic bin')
 MWR_WS      = Item('metawrap binning work')
 MWR_REFINE_WS = Item('metawrap refine work')
-CHECKM      = Item('metagnomic bins checkm results')
 
 CONTAINER   = 'metawrap.sif'
 CHECKM_DB   = 'checkm_data_2015_01_16'
@@ -101,22 +100,6 @@ def example_procedure(context: JobContext) -> JobResult:
         {NL.join(f"cp {refined_bins.joinpath(o)} {n}" for o, n in zip(original_bins, renamed_bin_paths))}
     """)
 
-    #################################################################################
-    # checkm
-
-    checkm_out = context.output_folder.joinpath(f'{name}_checkm_on_bins')
-    context.shell(f"""\
-        singularity exec -B {",".join(binds)} {CONTAINER} \
-            checkm lineage_wf -t {params.threads} -x fa \
-            /ws/{refine_out}/metawrap_{COMPLETION}_{CONTAMINATION}_bins/ \
-            /ws/{checkm_out}
-    """)
-    if not os.path.exists(checkm_out):
-        context.shell(f"""\
-            mkdir -p {checkm_out}
-            touch {checkm_out}/CHECKM_FAILED
-        """)
-
     return JobResult(
         exit_code = 0,
         manifest = {
@@ -133,7 +116,6 @@ MODULE = ModuleBuilder()\
     .AddInput(READ_TYPE,    groupby=SAMPLE)\
     .AddInput(ASM,          groupby=SAMPLE)\
     .PromiseOutput(BIN)\
-    .PromiseOutput(CHECKM)\
     .PromiseOutput(MWR_WS)\
     .PromiseOutput(MWR_REFINE_WS)\
     .Requires({CONTAINER})\

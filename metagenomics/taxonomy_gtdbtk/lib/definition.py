@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 from limes_x import ModuleBuilder, Item, JobContext, JobResult
 
-SAMPLE      = Item('sample')
+SAMPLE      = Item('sra accession')
 BINS        = Item('metagenomic bin')
 
 GTDBTK_WS   = Item('gtdbtk work')
