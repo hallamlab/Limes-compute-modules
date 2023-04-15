@@ -39,7 +39,7 @@ def procedure(context: JobContext) -> JobResult:
         return f"""\
         singularity run -B ./:/ws {context.params.reference_folder}/{FLYE} \
         flye --meta --threads {params.threads} \
-            --pacbio-raw /ws/{reads} --out-dir /ws/{ws}
+            --pacbio-raw {' '.join('/ws/'+str(r) for r in reads)} --out-dir /ws/{ws}
         mv {ws}/assembly.fasta {out}
         """
 
@@ -47,7 +47,7 @@ def procedure(context: JobContext) -> JobResult:
         ones, twos, singles = [], [], []
         for rpath in reads:
             name = rpath.name.replace(".gz", "").replace(".fastq", "")
-            r = f"{rpath}"
+            r = f"/ws/{rpath}"
             if name.endswith("_1"):
                 ones.append(r)
             elif name.endswith("_2"):
