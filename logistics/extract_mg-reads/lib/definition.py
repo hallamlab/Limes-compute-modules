@@ -5,15 +5,6 @@ from limes_x import ModuleBuilder, Item, JobContext, JobResult
 SAMPLE      = Item('sra accession')
 RAW         = Item('sra raw')
 USERNAME    = Item('username')
-READ_TYPE   = Item('metagenomic read type')
-# READ_TYPE is "<type>:<layout>"
-# where <type> is one of:
-# - "long"
-# - "short"
-# and <layout> is one of:
-# - "paired_end"
-# - "interleaved"
-# - "single_end"
 
 READS       = Item('metagenomic gzipped reads')
 
@@ -33,10 +24,6 @@ def procedure(context: JobContext) -> JobResult:
 
     raw_sra = M[RAW]
     assert isinstance(raw_sra, Path), raw_sra
-
-    read_type = M[READ_TYPE]
-    assert isinstance(read_type, str), read_type
-    read_length, read_layout = read_type.split(":")
 
     accession = M[SAMPLE]
     assert isinstance(accession, str)
@@ -73,19 +60,10 @@ def procedure(context: JobContext) -> JobResult:
     out_files = []
     if code == 0:
         extracted_out_dir = OUT_DIR.joinpath(accession)
-        extracted = list(os.listdir(extracted_out_dir))
+        WL = "fasta, fastq, fq, fa, fna".split(", ")
+        extracted = [f for f in os.listdir(extracted_out_dir) if any(x == f.split(".")[-1] for x in WL)]
 
-        if read_layout == "paired_end":
-            fwd_candidates = [f for f in extracted if rm_file_extension(f).endswith("_1")]
-            rev_candidates = [f for f in extracted if rm_file_extension(f).endswith("_2")]
-            assert len(fwd_candidates) == 1
-            assert len(rev_candidates) == 1
-            wanted_files = [c[0] for c in (fwd_candidates, rev_candidates)]
-        else: # must be only one file
-            wanted_files = [f for f in extracted if not any(rm_file_extension(f).endswith(x) for x in ["_1", "_2"])]
-            assert len(wanted_files) == 1
-
-        for f in wanted_files:
+        for f in extracted:
             out_file = f"{f}.gz"
             context.shell(f"""\
                 cd {extracted_out_dir}
@@ -112,7 +90,6 @@ MODULE = ModuleBuilder()\
     .AddInput(SAMPLE,       groupby=SAMPLE)\
     .AddInput(RAW,          groupby=SAMPLE)\
     .AddInput(USERNAME,     groupby=SAMPLE)\
-    .AddInput(READ_TYPE,    groupby=SAMPLE)\
     .PromiseOutput(READS)\
     .Requires({CONTAINER, PIGZ})\
     .SuggestedResources(threads=2, memory_gb=16)\

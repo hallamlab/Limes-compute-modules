@@ -6,7 +6,6 @@ from limes_x import ModuleBuilder, Item, JobContext, JobResult
 
 SAMPLE      = Item('sra accession')
 READS       = Item('metagenomic gzipped reads')
-READ_TYPE   = Item('metagenomic read type')
 ASM         = Item('metagenomic assembly')
 
 BIN         = Item('metagenomic bin')
@@ -43,21 +42,21 @@ def example_procedure(context: JobContext) -> JobResult:
         assert isinstance(r, Path), f"expected path for reads, got {type(r)} for {r}"
         zipped_reads.append(r)
 
-    rtype = context.manifest[READ_TYPE]
-    assert isinstance(rtype, str), f"invalid read type: {rtype}"
-    _, read_type = rtype.split(':')
+    # rtype = context.manifest[READ_TYPE]
+    # assert isinstance(rtype, str), f"invalid read type: {rtype}"
+    # _, read_type = rtype.split(':')
 
     name = context.manifest[SAMPLE]
     assert isinstance(name, str), f"name wasn't a str: {name}"
 
     asm = context.manifest[ASM]
-    assert isinstance(asm, Path), f"assembly wasn't a path: {name}"
+    assert isinstance(asm, Path), f"assembly wasn't a path: {asm}"
 
-    special_read_type = { # switch
-        "interleaved": lambda: "--interleaved",
-        "single_end": lambda: "--single-end",
-        "long_read": lambda: "--single-end",
-    }.get(read_type, lambda: "")()
+    # special_read_type = { # switch
+    #     "interleaved": lambda: "--interleaved",
+    #     "single_end": lambda: "--single-end",
+    #     "long_read": lambda: "--single-end",
+    # }.get(read_type, lambda: "")()
     container = params.reference_folder.joinpath(CONTAINER)
 
     #################################################################################
@@ -75,7 +74,7 @@ def example_procedure(context: JobContext) -> JobResult:
     code = context.shell(f"""\
         PYTHONPATH=""
         singularity exec -B {",".join(binds)} {container} \
-        metaWRAP binning -t {params.threads} -m {params.mem_gb} --maxbin2 --metabat2 --concoct {special_read_type} \
+        metaWRAP binning -t {params.threads} -m {params.mem_gb} --maxbin2 --metabat2 --concoct \
             -a /ws/{asm} \
             -o /ws/{metawrap_out} \
             {" ".join(str(r) for r in reads)}
@@ -164,7 +163,6 @@ MODULE = ModuleBuilder()\
     .SetProcedure(example_procedure)\
     .AddInput(SAMPLE,       groupby=SAMPLE)\
     .AddInput(READS,        groupby=SAMPLE)\
-    .AddInput(READ_TYPE,    groupby=SAMPLE)\
     .AddInput(ASM,          groupby=SAMPLE)\
     .PromiseOutput(BIN)\
     .PromiseOutput(MWR_WS)\
