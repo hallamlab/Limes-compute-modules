@@ -16,6 +16,7 @@ MWR_REFINE_WS = Item('metawrap refine work')
 CONTAINER   = 'metawrap.sif'
 CHECKM_DB   = 'checkm_data_2015_01_16'
 CHECKM_SRC  = 'checkm_src'
+PIGZ        = 'pigz'
 
 def example_procedure(context: JobContext) -> JobResult:
     COMPLETION, CONTAMINATION = 50, 5
@@ -64,7 +65,7 @@ def example_procedure(context: JobContext) -> JobResult:
     reads: list[Path] = []
     for r in zipped_reads:
         unzipped_r = cache.joinpath(r.name.replace(".gz", ""))
-        context.shell(f"gunzip -c {r} >{unzipped_r}")
+        context.shell(f"{ref.joinpath(PIGZ)} -p {params.threads} -dc {r} >{unzipped_r}")
         reads.append(unzipped_r)
 
     #################################################################################
@@ -77,7 +78,7 @@ def example_procedure(context: JobContext) -> JobResult:
         metaWRAP binning -t {params.threads} -m {params.mem_gb} --maxbin2 --metabat2 --concoct \
             -a /ws/{asm} \
             -o /ws/{metawrap_out} \
-            {" ".join(str(r) for r in reads)}
+            {" ".join(f"/ws/{r}" for r in reads)}
     """)
     if code != 0: return fail("metawrap binning failed")
     
@@ -167,9 +168,7 @@ MODULE = ModuleBuilder()\
     .PromiseOutput(BIN)\
     .PromiseOutput(MWR_WS)\
     .PromiseOutput(MWR_REFINE_WS)\
-    .Requires({CONTAINER})\
-    .Requires({CHECKM_DB})\
-    .Requires({CHECKM_SRC})\
+    .Requires({CONTAINER, CHECKM_DB, CHECKM_SRC, PIGZ})\
     .SuggestedResources(threads=2, memory_gb=48)\
     .SetHome(__file__)\
     .Build()
