@@ -46,7 +46,7 @@ def procedure(context: JobContext) -> JobResult:
     def _megahit(reads: list[Path]):
         ones, twos, singles = [], [], []
         for rpath in reads:
-            name = ".".join(rpath.name.split(".")[:-1])
+            name = rpath.name.replace(".gz", "").replace(".fastq", "")
             r = f"{rpath}"
             if name.endswith("_1"):
                 ones.append(r)
