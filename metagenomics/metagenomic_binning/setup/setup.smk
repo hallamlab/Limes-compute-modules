@@ -1,9 +1,11 @@
 CHECKM_DB = "checkm_data_2015_01_16"
 CHECKM_SRC = "checkm_src"
+PIGZ = "pigz"
 
 rule singularity:
     input:
         "metawrap.sif",
+        PIGZ,
         CHECKM_SRC+"/__init__.py",  # we want the whole folder, but snakemake prefers files over folders
         CHECKM_DB+"/.dmanifest"     # again, we pick a file to represent the folder
 
@@ -13,6 +15,27 @@ rule metawrap:
     shell:
         """
         singularity pull {output} library://txyliu/limesx/quay_biocontainers_metawrap-mg:v1.3.0
+        """
+
+rule get_pigz:
+    output:
+        "pigz.tar.gz"
+    shell:
+        """
+        wget https://zlib.net/pigz/{output}
+        """
+
+rule compile_pigz:
+    output:
+        PIGZ
+    input:
+        "pigz.tar.gz"
+    shell:
+        """
+        tar -xf {input} && mv pigz pigz_lib \
+        && cd pigz_lib && make \
+        && cp pigz ../ && cd ../ && rm -rf pigz_lib \
+        && rm {input}
         """
 
 # the last bind is to ensure that the default db location really doesn't exist, in the event of a crazy fluke

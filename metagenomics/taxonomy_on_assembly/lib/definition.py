@@ -2,10 +2,10 @@ from limes_x import ModuleBuilder, Item
 from gtdbtk import gtdbtk_procedure
 
 SAMPLE      = Item('sra accession')
-BINS        = Item('metagenomic bin')
+BINS        = Item('metagenomic assembly')
 
-GTDBTK_WS   = Item('bin gtdbtk work')
-GTDBTK_TAX  = Item('bin taxonomy table')
+GTDBTK_WS   = Item('assembly gtdbtk work')
+GTDBTK_TAX  = Item('assembly taxonomy table')
 
 CONTAINER   = 'gtdbtk.sif'
 GTDBTK_DB   = 'gtdbtk_data'

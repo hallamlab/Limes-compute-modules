@@ -1,0 +1,1 @@
+../../taxonomy_on_bin/lib/gtdbtk.py

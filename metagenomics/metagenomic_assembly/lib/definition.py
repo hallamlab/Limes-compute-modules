@@ -74,7 +74,7 @@ def procedure(context: JobContext) -> JobResult:
     #https://bioinformatics.stackexchange.com/questions/935/fast-way-to-count-number-of-reads-and-number-of-bases-in-a-fastq-file
     read_sizes = context.output_folder.joinpath("temp.readcount.txt")
     context.shell(f"""\
-        {context.params.reference_folder.joinpath('pigz')} -p {params.threads} -dc {reads[0]} \
+        {context.params.reference_folder.joinpath(PIGZ)} -p {params.threads} -dc {reads[0]} \
         | awk 'NR % 4 == 2' \
         | wc -cl >{read_sizes} \
     """)
