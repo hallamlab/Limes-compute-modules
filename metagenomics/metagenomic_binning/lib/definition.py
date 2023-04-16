@@ -23,7 +23,11 @@ def example_procedure(context: JobContext) -> JobResult:
     TEMP_PREFIX = "temp"
     cache = context.output_folder.joinpath(TEMP_PREFIX)
     os.makedirs(cache, exist_ok=True)
+    def cleanup():
+        context.shell(f"rm -r {cache}")
+
     def fail(msg: str):
+        cleanup()
         return JobResult(
             error_message = msg,
         )
@@ -145,10 +149,11 @@ def example_procedure(context: JobContext) -> JobResult:
 
     #################################################################################
     # cleanup
+    
+    cleanup()
     NL = '\n'
     context.shell(f"""\
         {NL.join(f"cp {refined_bins.joinpath(o)} {n}" for o, n in zip(original_bins, renamed_bin_paths))}
-        rm -rf {cache}
     """)
 
     return JobResult(
