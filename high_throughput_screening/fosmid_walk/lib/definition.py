@@ -6,8 +6,9 @@ BACKBONE    = Item("fosmid vector backbone sequence")
 DEFAULT_BACKBONE = "pcc1"
 READS       = Item("fosmid reads")
 
-FW_J        = Item("fosmid pool junctions")
-FW_HITS     = Item("fosmid pool hits")
+FW_FULL     = Item("fosmid pool reads with ends")
+FW_HITS     = Item("fosmid pool ends")
+FW_STATS    = Item("foswalk stats")
 
 CONTAINER   = "foswalk.sif"
 
@@ -52,11 +53,13 @@ def procedure(context: JobContext) -> JobResult:
         rm -rf {context.output_folder.joinpath(TEMP_PREFIX)}*
         """)
 
+    sample_name = ".".join(reads.name.split(".")[:-1])
     return JobResult(
         exit_code =code,
         manifest = {
-            FW_J: context.output_folder.joinpath(f"{reads.name}_full.fasta"),
-            FW_HITS: context.output_folder.joinpath(f"{reads.name}_hits.fasta"),
+            FW_FULL: context.output_folder.joinpath(f"{sample_name}_original.fasta"),
+            FW_HITS: context.output_folder.joinpath(f"{sample_name}_hits.fasta"),
+            FW_STATS: context.output_folder.joinpath(f"{sample_name}.json"),
         },
     )
 
@@ -64,8 +67,9 @@ MODULE = ModuleBuilder()\
     .SetProcedure(procedure)\
     .AddInput(BACKBONE)\
     .AddInput(READS)\
-    .PromiseOutput(FW_J)\
+    .PromiseOutput(FW_FULL)\
     .PromiseOutput(FW_HITS)\
+    .PromiseOutput(FW_STATS)\
     .Requires({CONTAINER})\
     .SuggestedResources(threads=1, memory_gb=8)\
     .SetHome(__file__)\
