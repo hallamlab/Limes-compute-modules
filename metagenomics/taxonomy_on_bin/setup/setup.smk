@@ -14,7 +14,7 @@ rule get_image:
         CONTAINER
     shell:
         """
-        singularity build {output} docker://https://quay.io/repository/txyliu/gtdbtk
+        singularity build {output} docker://quay.io/txyliu/gtdbtk
         """
 
 # check url if change version
@@ -36,7 +36,7 @@ rule extract_gtdbtk_refdata:
         release=f"release{VERSION}"
     shell:
         """
-        tar -xvf {input} -C {params.folder} \
+        tar -xf {input} -C {params.folder} \
         && cd {params.folder} \
         && mv {params.release}/* ./
         && rmdir {params.release}

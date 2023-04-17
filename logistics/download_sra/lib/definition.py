@@ -1,7 +1,7 @@
 from pathlib import Path
 from limes_x import ModuleBuilder, Item, JobContext, JobResult
 
-ACCESSION   = Item('sra accession')
+SAMPLE      = Item('sra accession')
 USERNAME    = Item('username')
 
 RAW         = Item('sra raw')
@@ -15,7 +15,7 @@ def procedure(context: JobContext) -> JobResult:
     TEMP_PREFIX = "temp"
     container = P.reference_folder.joinpath(CONTAINER)
 
-    accession_list = M[ACCESSION]
+    accession_list = M[SAMPLE]
     if not isinstance(accession_list, list):
         accession_list = [accession_list]
     for acc in accession_list:
@@ -50,8 +50,8 @@ def procedure(context: JobContext) -> JobResult:
 
 MODULE = ModuleBuilder()\
     .SetProcedure(procedure)\
-    .AddInput(ACCESSION, groupby=ACCESSION)\
-    .AddInput(USERNAME, groupby=ACCESSION)\
+    .AddInput(SAMPLE,       groupby=SAMPLE)\
+    .AddInput(USERNAME,     groupby=SAMPLE)\
     .PromiseOutput(RAW)\
     .Requires({CONTAINER})\
     .SuggestedResources(threads=1, memory_gb=12)\

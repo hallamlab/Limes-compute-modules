@@ -1,17 +1,8 @@
 import os
 from pathlib import Path
-from limes_x import ModuleBuilder, Item, JobContext, JobResult
+from limes_x import JobContext, JobResult
 
-SAMPLE      = Item('sample')
-BINS        = Item('metagenomic bin')
-
-GTDBTK_WS   = Item('gtdbtk work')
-GTDBTK_TAX  = Item('gtdbtk taxonomy table')
-
-CONTAINER   = 'gtdbtk.sif'
-GTDBTK_DB   = 'gtdbtk_data'
-
-def example_procedure(context: JobContext) -> JobResult:
+def gtdbtk_procedure(context: JobContext, SAMPLE, BINS, GTDBTK_WS, GTDBTK_TAX, CONTAINER, GTDBTK_DB) -> JobResult:
     manifest = context.manifest
     params = context.params
     ref = params.reference_folder
@@ -95,14 +86,3 @@ def example_procedure(context: JobContext) -> JobResult:
             GTDBTK_TAX: summary,
         },
     )
-
-MODULE = ModuleBuilder()\
-    .SetProcedure(example_procedure)\
-    .AddInput(SAMPLE)\
-    .AddInput(BINS, groupby=SAMPLE)\
-    .PromiseOutput(GTDBTK_WS)\
-    .PromiseOutput(GTDBTK_TAX)\
-    .SuggestedResources(threads=2, memory_gb=88)\
-    .Requires({CONTAINER, GTDBTK_DB})\
-    .SetHome(__file__, name=None)\
-    .Build()

@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 from limes_x import ModuleBuilder, Item, JobContext, JobResult
 
-SAMPLE      = Item('sample')
+SAMPLE      = Item('sra accession')
 BIN         = Item('metagenomic bin')
 
 MP3_WS      = Item('metapathways work')
