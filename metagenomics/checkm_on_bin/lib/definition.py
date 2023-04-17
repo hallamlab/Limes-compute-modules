@@ -48,7 +48,6 @@ def _procedure(context: JobContext) -> JobResult:
     """)
 
     return JobResult(
-        exit_code = code,
         manifest = {
             CHECKM_WS: out_folder,
             CHECKM_STATS: out_stats,

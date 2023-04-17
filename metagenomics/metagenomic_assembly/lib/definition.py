@@ -95,7 +95,6 @@ def procedure(context: JobContext) -> JobResult:
     """)
 
     return JobResult(
-        exit_code = code,
         manifest = {
             ASM: out,
             ASM_WS: ws

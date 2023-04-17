@@ -125,7 +125,6 @@ def procedure(context: JobContext) -> JobResult:
     """)
 
     return JobResult(
-        exit_code = 0,
         manifest = {
             ASSEMBLY: contigs,
             COVERAGE: str(cov),

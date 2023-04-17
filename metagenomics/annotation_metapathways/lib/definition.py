@@ -65,7 +65,6 @@ def example_procedure(context: JobContext) -> JobResult:
         code = max(1, _code+code)
 
     return JobResult(
-        exit_code = code,
         manifest = {
             MP3_WS: out_folder,
             ANNOTATIONS: annotations,

@@ -80,7 +80,6 @@ def gtdbtk_procedure(context: JobContext, SAMPLE, BINS, GTDBTK_WS, GTDBTK_TAX, C
     """)
 
     return JobResult(
-        exit_code = code,
         manifest = {
             GTDBTK_WS: out_folder,
             GTDBTK_TAX: summary,

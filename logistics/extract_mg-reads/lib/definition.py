@@ -81,7 +81,6 @@ def procedure(context: JobContext) -> JobResult:
     """)
 
     return JobResult(
-        exit_code = code,
         manifest = manifest,
     )
 

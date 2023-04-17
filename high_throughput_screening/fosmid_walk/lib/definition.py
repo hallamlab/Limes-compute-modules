@@ -55,7 +55,6 @@ def procedure(context: JobContext) -> JobResult:
 
     sample_name = ".".join(reads.name.split(".")[:-1])
     return JobResult(
-        exit_code =code,
         manifest = {
             FW_FULL: context.output_folder.joinpath(f"{sample_name}_original.fasta"),
             FW_HITS: context.output_folder.joinpath(f"{sample_name}_hits.fasta"),
