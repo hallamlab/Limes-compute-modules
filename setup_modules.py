@@ -7,12 +7,12 @@ assert len(sys.argv) > 1, f"no installation path given"
 ref_dir = Path(sys.argv[1])
 os.makedirs(ref_dir, exist_ok=True)
 
-SCRIPT = Path(os.path.abspath(__file__))
+HERE = Path(os.path.dirname(__file__))
 
 modules = []
-modules += ComputeModule.LoadSet(SCRIPT.joinpath("logistics"))
-modules += ComputeModule.LoadSet(SCRIPT.joinpath("metagenomics"))
-modules += ComputeModule.LoadSet(SCRIPT.joinpath("high_throughput_screening"))
+modules += ComputeModule.LoadSet(HERE.joinpath("logistics"))
+modules += ComputeModule.LoadSet(HERE.joinpath("metagenomics"))
+modules += ComputeModule.LoadSet(HERE.joinpath("high_throughput_screening"))
 modules = [m for m in modules if "dram" not in m.name]
 wf = lx.Workflow(modules, ref_dir)
 wf.Setup('singularity')
