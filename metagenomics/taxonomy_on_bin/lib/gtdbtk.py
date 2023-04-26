@@ -2,6 +2,9 @@ import os
 from pathlib import Path
 from limes_x import JobContext, JobResult
 
+VERSION     = "207_v2"
+GTDBTK_DB   = f"gtdbtk_r{VERSION}_data.tar.gz"
+
 def gtdbtk_procedure(context: JobContext, SAMPLE, BINS, GTDBTK_WS, GTDBTK_TAX, CONTAINER, GTDBTK_DB) -> JobResult:
     manifest = context.manifest
     params = context.params
@@ -14,6 +17,7 @@ def gtdbtk_procedure(context: JobContext, SAMPLE, BINS, GTDBTK_WS, GTDBTK_TAX, C
     sample = manifest[SAMPLE]
     assert isinstance(sample, str), f"expected str for sample, got {sample}"
 
+    # localize bins
     bin_paths = manifest[BINS]
     if not isinstance(bin_paths, list): bin_paths = [bin_paths]
     bin_folder = context.output_folder.joinpath(f"{TEMP_PREFIX}.bin_input")
@@ -41,8 +45,18 @@ def gtdbtk_procedure(context: JobContext, SAMPLE, BINS, GTDBTK_WS, GTDBTK_TAX, C
         ls -lh {bin_folder}
     """)
 
+    # extract db
+    _db_folder = "gtdbtk_data"
+    extracted_db: Path = ref.joinpath(_db_folder).joinpath(f"release{VERSION}")
+    if not extracted_db.exists():
+        context.shell(f"""\
+            cd {ref}
+            mkdir -p {_db_folder}
+            pigz -dc {GTDBTK_DB} | tar -xf - -C {_db_folder}
+        """)
+
     binds = [
-        f"{ref.joinpath(GTDBTK_DB)}:/ref",
+        f"{extracted_db}:/ref",
         f"{temp_dir}:/gtdbtk_temp",
         f"./:/ws",
     ]
