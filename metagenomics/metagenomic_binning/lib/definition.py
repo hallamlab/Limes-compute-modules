@@ -145,7 +145,7 @@ def example_procedure(context: JobContext) -> JobResult:
             for l in original:
                 tokens = l[:-1].split("\t")
                 new_tokens = [get_new_name(tokens[0])] + tokens[1:-1] + [get_binners(tokens[-1])]
-                stats.write(TAB.join(new_tokens))
+                stats.write(TAB.join(new_tokens)+"\n")
 
     #################################################################################
     # cleanup
