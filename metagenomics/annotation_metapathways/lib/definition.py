@@ -11,6 +11,7 @@ ANNOTATIONS = Item('genomic annotation')
 CONTAINER   = 'metapathways.sif'
 MP3_DB      = 'metapathways_db'
 MP3_PARAMS  = 'metapathways_params.txt'
+PIGZ        = 'pigz'
 
 def example_procedure(context: JobContext) -> JobResult:
     manifest = context.manifest
@@ -22,6 +23,7 @@ def example_procedure(context: JobContext) -> JobResult:
     ]
 
     container = ref.joinpath(CONTAINER)
+    pigz = ref.joinpath(PIGZ)
 
     TEMP_PREFIX = "temp"
     input_dir = context.output_folder.joinpath(f"{TEMP_PREFIX}.inputs")
@@ -55,18 +57,28 @@ def example_procedure(context: JobContext) -> JobResult:
         out_path = f"{out_folder}/{out_dir}"
         if not os.path.isdir(out_path): continue
 
-        result = context.output_folder.joinpath(out_dir.replace(IN_PREFIX, "")+"_mp3")
-        annotations.append(result)
+        result = out_dir.replace(IN_PREFIX, "")+"_mp3"
+        result_zip = f"{result}.tar.gz"
+        annotations.append(context.output_folder.joinpath(result_zip))
         _code = context.shell(f"""\
+            cd {context.output_folder}
             mkdir -p {result}
-            cp -r {out_path}/results/* {result}/
-            cp {out_path}/ptools/0.pf {result}/ptools_input.pf
+            cp -r {out_name}/{out_dir}/orf_prediction/* {result}/
+            cp -r {out_name}/{out_dir}/results/* {result}/
+            cp {out_name}/{out_dir}/ptools/0.pf {result}/ptools_input.pf
+            tar -cf - {result} | {pigz} -7 -p {params.threads} >{result_zip} && rm -r {result}
         """)
         code = max(1, _code+code)
 
+    out_folder_zip = Path(f"{out_folder}.tar.gz")
+    context.shell(f"""\
+        cd {context.output_folder}
+        tar -cf - {out_folder} | {pigz} -7 -p {params.threads} >{out_folder_zip} && rm -r {out_folder}
+    """)
+
     return JobResult(
         manifest = {
-            MP3_WS: out_folder,
+            MP3_WS: out_folder_zip,
             ANNOTATIONS: annotations,
         },
     )
@@ -77,7 +89,7 @@ MODULE = ModuleBuilder()\
     .AddInput(BIN, groupby=SAMPLE)\
     .PromiseOutput(MP3_WS)\
     .PromiseOutput(ANNOTATIONS)\
-    .Requires({CONTAINER, MP3_DB, MP3_PARAMS})\
+    .Requires({CONTAINER, PIGZ, MP3_DB, MP3_PARAMS})\
     .SuggestedResources(threads=4, memory_gb=48)\
     .SetHome(__file__, name=None)\
     .Build()
