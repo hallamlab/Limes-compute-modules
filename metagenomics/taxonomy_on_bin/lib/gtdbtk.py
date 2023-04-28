@@ -52,7 +52,7 @@ def gtdbtk_procedure(context: JobContext, SAMPLE, BINS, GTDBTK_WS, GTDBTK_TAX, C
         context.shell(f"""\
             cd {ref}
             mkdir -p {_db_folder}
-            pigz -dc {GTDBTK_DB} | tar -xf - -C {_db_folder}
+            pigz -dc {GTDBTK_DB} | tar -xf - -C {_db_folder} && rm -r {GTDBTK_DB}
         """)
 
     binds = [
