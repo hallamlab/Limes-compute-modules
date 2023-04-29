@@ -63,17 +63,17 @@ def example_procedure(context: JobContext) -> JobResult:
         _code = context.shell(f"""\
             cd {context.output_folder}
             mkdir -p {result}
-            cp -r {out_name}/{out_dir}/orf_prediction/* {result}/
-            cp -r {out_name}/{out_dir}/results/* {result}/
-            cp {out_name}/{out_dir}/ptools/0.pf {result}/ptools_input.pf
+            mv {out_name}/{out_dir}/orf_prediction/* {result}/
+            mv {out_name}/{out_dir}/results/* {result}/
+            mv {out_name}/{out_dir}/ptools/0.pf {result}/ptools_input.pf
             tar -cf - {result} | {pigz} -7 -p {params.threads} >{result_zip} && rm -r {result}
         """)
         code = max(1, _code+code)
 
-    out_folder_zip = Path(f"{out_folder}.tar.gz")
+    out_folder_zip = Path(f"{out_name}.tar.gz")
     context.shell(f"""\
         cd {context.output_folder}
-        tar -cf - {out_folder} | {pigz} -7 -p {params.threads} >{out_folder_zip} && rm -r {out_folder}
+        tar -cf - {out_name} | {pigz} -7 -p {params.threads} >{out_folder_zip} && rm -r {out_name}
     """)
 
     return JobResult(
