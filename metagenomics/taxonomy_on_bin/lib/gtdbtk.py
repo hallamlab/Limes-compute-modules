@@ -69,24 +69,30 @@ def gtdbtk_procedure(context: JobContext, SAMPLE, BINS, GTDBTK_WS, GTDBTK_TAX, C
             --force --tmpdir /gtdbtk_temp \
             --genome_dir /ws/{bin_folder} \
             --out_dir /ws/{out_folder}
+        ls -lh {out_folder}
     """)
 
     classify_out = out_folder.joinpath("classify")
     file_candidates = os.listdir(classify_out) if classify_out.exists() else []
     file_candidates = [classify_out.joinpath(f) for f in file_candidates if f.endswith("summary.tsv")]
-    if len(file_candidates) != 1:
+    if len(file_candidates) == 0:
         return JobResult(
             exit_code = 1,
-            error_message = f"didn't finish; no summary table produced: {file_candidates}",
+            error_message = f"didn't finish; no summary table produced",
                     manifest = {
             GTDBTK_WS: out_folder,
             },
         )
 
     summary = context.output_folder.joinpath(f"{sample}-bins.tax.tsv")
-    context.shell(f"""\
-        cp {file_candidates[0]} {summary}
-    """)
+    written_header = False
+    with open(summary, "w") as out:
+        for table in file_candidates:
+            with open(table) as tsv:
+                header = tsv.readline()
+                if not written_header: out.write(header); written_header = True
+                for l in tsv:
+                    out.write(l)
 
     #clean up
     context.shell(f"""\
