@@ -70,11 +70,12 @@ def example_procedure(context: JobContext) -> JobResult:
         """)
         code = max(1, _code+code)
 
-    out_folder_zip = Path(f"{out_name}.tar.gz")
+    out_folder_zip = f"{out_name}.tar.gz"
     context.shell(f"""\
         cd {context.output_folder}
         tar -cf - {out_name} | {pigz} -7 -p {params.threads} >{out_folder_zip} && rm -r {out_name}
     """)
+    out_folder_zip = context.output_folder.joinpath(out_folder_zip)
 
     return JobResult(
         manifest = {
