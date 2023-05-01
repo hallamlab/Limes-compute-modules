@@ -67,10 +67,22 @@ def example_procedure(context: JobContext) -> JobResult:
     #################################################################################
     # extract reads
     reads: list[Path] = []
+    paired, single = False, False
     for r in zipped_reads:
         unzipped_r = cache.joinpath(r.name.replace(".gz", ""))
         context.shell(f"{ref.joinpath(PIGZ)} -p {params.threads} -dc {r} >{unzipped_r}")
         reads.append(unzipped_r)
+        if any(str(unzipped_r).split(".")[-2].endswith(x) for x in ["_1", "_2"]):
+            paired = True
+        else:
+            single = True
+
+    # https://github.com/bxlab/metaWRAP/issues/254    
+    special_read_type = " "
+    if single:
+        special_read_type = "--single-end"
+    if paired and single:
+        reads = [r for r in reads if not str(r).split(".")[-2].endswith("_2")]
 
     #################################################################################
     # bin
@@ -82,6 +94,7 @@ def example_procedure(context: JobContext) -> JobResult:
         metaWRAP binning -t {params.threads} -m {params.mem_gb} --maxbin2 --metabat2 --concoct \
             -a /ws/{asm} \
             -o /ws/{metawrap_out} \
+            {special_read_type} \
             {" ".join(f"/ws/{r}" for r in reads)}
     """)
     if code != 0: return fail("metawrap binning failed")
