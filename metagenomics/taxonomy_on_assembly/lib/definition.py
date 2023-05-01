@@ -1,5 +1,5 @@
 from limes_x import ModuleBuilder, Item
-from gtdbtk import gtdbtk_procedure
+from gtdbtk import gtdbtk_procedure, GTDBTK_DB
 
 SAMPLE      = Item('sra accession')
 BINS        = Item('metagenomic assembly')
@@ -8,7 +8,6 @@ GTDBTK_WS   = Item('assembly gtdbtk work')
 GTDBTK_TAX  = Item('assembly taxonomy table')
 
 CONTAINER   = 'gtdbtk.sif'
-GTDBTK_DB   = 'gtdbtk_data'
 
 MODULE = ModuleBuilder()\
     .SetProcedure(lambda context: gtdbtk_procedure(context, SAMPLE, BINS, GTDBTK_WS, GTDBTK_TAX, CONTAINER, GTDBTK_DB))\
