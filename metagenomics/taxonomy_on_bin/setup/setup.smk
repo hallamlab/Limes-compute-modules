@@ -12,7 +12,7 @@ rule get_image:
         CONTAINER
     shell:
         """
-        singularity build {output} docker://quay.io/txyliu/gtdbtk
+        singularity build {output} docker://ecogenomic/gtdbtk:2.2.6
         """
 
 # check url if change version

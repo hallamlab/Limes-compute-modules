@@ -34,7 +34,7 @@ rule compile_pigz:
         """
         tar -xf {input} && mv pigz pigz_lib \
         && cd pigz_lib && make \
-        && cp pigz ../ && cd ../ && rm -rf pigz_lib \
+        && chmod +x pigz && cp pigz ../ && cd ../ && rm -rf pigz_lib \
         && rm {input}
         """
 

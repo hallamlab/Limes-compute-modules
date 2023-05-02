@@ -63,6 +63,7 @@ def gtdbtk_procedure(context: JobContext, SAMPLE, BINS, GTDBTK_WS, GTDBTK_TAX, C
 
     code = context.shell(f"""\
         mkdir -p {temp_dir}
+        PYTHONPATH=""
         singularity run -B {",".join(binds)} {container} \
         gtdbtk classify_wf -x {ext} \
             --cpus {params.threads} --pplacer_cpus {int(min(params.threads, params.mem_gb//(40+1)))} \

@@ -47,10 +47,6 @@ def example_procedure(context: JobContext) -> JobResult:
         assert isinstance(r, Path), f"expected path for reads, got {type(r)} for {r}"
         zipped_reads.append(r)
 
-    # rtype = context.manifest[READ_TYPE]
-    # assert isinstance(rtype, str), f"invalid read type: {rtype}"
-    # _, read_type = rtype.split(':')
-
     name = context.manifest[SAMPLE]
     assert isinstance(name, str), f"name wasn't a str: {name}"
 
@@ -77,11 +73,12 @@ def example_procedure(context: JobContext) -> JobResult:
         else:
             single = True
 
-    # https://github.com/bxlab/metaWRAP/issues/254    
+    # does not handle interleaved
     special_read_type = " "
     if single:
         special_read_type = "--single-end"
     if paired and single:
+        # https://github.com/bxlab/metaWRAP/issues/254    
         reads = [r for r in reads if not str(r).split(".")[-2].endswith("_2")]
 
     #################################################################################
