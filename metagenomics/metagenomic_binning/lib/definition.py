@@ -22,7 +22,7 @@ def example_procedure(context: JobContext) -> JobResult:
     # https://www.nature.com/articles/nbt.3893
     # accepted standard for med. quality bins
     COMPLETION, CONTAMINATION = 50, 10 
-    
+
     TEMP_PREFIX = "temp"
     cache = context.output_folder.joinpath(TEMP_PREFIX)
     os.makedirs(cache, exist_ok=True)
@@ -151,7 +151,7 @@ def example_procedure(context: JobContext) -> JobResult:
 
     TAB = '\t'
     stats_file = context.output_folder.joinpath(f"{name}.stats")
-    with open(refine_out.joinpath("metawrap_50_5_bins.stats")) as original:
+    with open(refine_out.joinpath(f"metawrap_{COMPLETION}_{CONTAMINATION}_bins.stats")) as original:
         with open(stats_file, 'w') as stats:
             header = original.readline()
             stats.write(header)
