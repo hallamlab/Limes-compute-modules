@@ -19,7 +19,10 @@ CHECKM_SRC  = 'checkm_src'
 PIGZ        = 'pigz'
 
 def example_procedure(context: JobContext) -> JobResult:
-    COMPLETION, CONTAMINATION = 50, 5
+    # https://www.nature.com/articles/nbt.3893
+    # accepted standard for med. quality bins
+    COMPLETION, CONTAMINATION = 50, 10 
+    
     TEMP_PREFIX = "temp"
     cache = context.output_folder.joinpath(TEMP_PREFIX)
     os.makedirs(cache, exist_ok=True)
