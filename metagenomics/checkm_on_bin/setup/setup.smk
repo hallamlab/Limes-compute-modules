@@ -7,7 +7,7 @@ CHECKM_DB_REP = CHECKM_DB+"/.dmanifest"
 rule singularity:
     input:
         CONTAINER,
-        CHECKM_DB,
+        CHECKM_DB_REP,
 
 rule get_image:
     output:
