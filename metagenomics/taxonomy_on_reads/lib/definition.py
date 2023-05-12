@@ -9,6 +9,7 @@ HITS        = Item('gzipped taxonmic hits of reads')
 
 CONTAINER   = 'kraken2.sif'
 _DB_SIZE = 16
+# _DB_SIZE = 8
 REF_DB      = f'k2_standard_{_DB_SIZE:02}gb_20230314' # 8gb db is named "...08gb..."
 PIGZ        = 'pigz'
 
@@ -30,7 +31,7 @@ def procedure(context: JobContext) -> JobResult:
     reads = []
     for r in _reads:
         assert isinstance(r, Path), f"expected path for reads, got: {r}"
-        context.shell(f"ln -s {r.absolute()} {input_dir.joinpath(r.name)}")
+        context.shell(f"cp -L {r.absolute()} {input_dir.joinpath(r.name)}")
         reads.append(r.name)
 
     binds = [
