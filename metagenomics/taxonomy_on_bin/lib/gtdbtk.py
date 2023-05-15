@@ -85,7 +85,7 @@ def gtdbtk_procedure(context: JobContext, SAMPLE, BINS, GTDBTK_WS, GTDBTK_TAX, C
             },
         )
 
-    summary = context.output_folder.joinpath(f"{sample}-bins.tax.tsv")
+    summary = context.output_folder.joinpath(f"{sample}.tax.tsv")
     written_header = False
     with open(summary, "w") as out:
         for table in file_candidates:
@@ -94,6 +94,13 @@ def gtdbtk_procedure(context: JobContext, SAMPLE, BINS, GTDBTK_WS, GTDBTK_TAX, C
                 if not written_header: out.write(header); written_header = True
                 for l in tsv:
                     out.write(l)
+
+    # todo: return trees as well
+    # out_tree = context.output_folder.joinpath(f"{sample}.tax.tree")
+    # file_candidates = os.listdir(classify_out) if classify_out.exists() else []
+    # file_candidates = [classify_out.joinpath(f) for f in file_candidates if (f.endswith(".tree") and "backbone" not in str(f))]
+    # with open(out_tree, "w") as out:
+
 
     #clean up
     context.shell(f"""\
