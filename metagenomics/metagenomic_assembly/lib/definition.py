@@ -5,6 +5,7 @@ from limes_x import ModuleBuilder, Item, JobContext, JobResult
 SAMPLE      = Item('sra accession')
 READS       = Item('metagenomic gzipped reads')
 
+ASMBLER     = Item('assembler')
 ASM         = Item('metagenomic assembly')
 ASM_WS      = Item('metagenomic assembly work')
 
@@ -41,7 +42,7 @@ def procedure(context: JobContext) -> JobResult:
         flye --meta --threads {params.threads} \
             --pacbio-raw {' '.join('/ws/'+str(r) for r in reads)} --out-dir /ws/{ws}
         mv {ws}/assembly.fasta {out}
-        """
+        """, "flye"
 
     def _megahit(reads: list[Path]):
         ones, twos, singles = [], [], []
@@ -69,7 +70,7 @@ def procedure(context: JobContext) -> JobResult:
         megahit --num-cpu-threads {params.threads} --memory {params.mem_gb}e9\
             {' '.join(read_params)} --out-dir /ws/{ws}
         mv {ws}/final.contigs.fa {out}
-        """
+        """, "megahit"
 
     #https://bioinformatics.stackexchange.com/questions/935/fast-way-to-count-number-of-reads-and-number-of-bases-in-a-fastq-file
     read_sizes = context.output_folder.joinpath("temp.readcount.txt")
@@ -88,7 +89,10 @@ def procedure(context: JobContext) -> JobResult:
         if int(nucleotides)/int(num_reads) > 600:
             is_short_read = False
 
-    exe_cmd = _megahit(reads) if is_short_read else _flye(reads)
+    if is_short_read:
+        exe_cmd, assembler = _megahit(reads)
+    else:
+        exe_cmd, assembler = _flye(reads)
     code = context.shell(f"""\
         PYTHONPATH=""
         {exe_cmd}
@@ -97,7 +101,8 @@ def procedure(context: JobContext) -> JobResult:
     return JobResult(
         manifest = {
             ASM: out,
-            ASM_WS: ws
+            ASMBLER: assembler,
+            ASM_WS: ws,
         },
     )
 
@@ -106,6 +111,7 @@ MODULE = ModuleBuilder()\
     .AddInput(SAMPLE,       groupby=SAMPLE)\
     .AddInput(READS,        groupby=SAMPLE)\
     .PromiseOutput(ASM)\
+    .PromiseOutput(ASMBLER)\
     .SuggestedResources(threads=8, memory_gb=16)\
     .Requires({FLYE, MEGAHIT, PIGZ})\
     .SetHome(__file__)\

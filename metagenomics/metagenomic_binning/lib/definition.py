@@ -19,7 +19,10 @@ CHECKM_SRC  = 'checkm_src'
 PIGZ        = 'pigz'
 
 def example_procedure(context: JobContext) -> JobResult:
-    COMPLETION, CONTAMINATION = 50, 5
+    # https://www.nature.com/articles/nbt.3893
+    # accepted standard for med. quality bins
+    COMPLETION, CONTAMINATION = 50, 10 
+
     TEMP_PREFIX = "temp"
     cache = context.output_folder.joinpath(TEMP_PREFIX)
     os.makedirs(cache, exist_ok=True)
@@ -47,10 +50,6 @@ def example_procedure(context: JobContext) -> JobResult:
         assert isinstance(r, Path), f"expected path for reads, got {type(r)} for {r}"
         zipped_reads.append(r)
 
-    # rtype = context.manifest[READ_TYPE]
-    # assert isinstance(rtype, str), f"invalid read type: {rtype}"
-    # _, read_type = rtype.split(':')
-
     name = context.manifest[SAMPLE]
     assert isinstance(name, str), f"name wasn't a str: {name}"
 
@@ -77,11 +76,12 @@ def example_procedure(context: JobContext) -> JobResult:
         else:
             single = True
 
-    # https://github.com/bxlab/metaWRAP/issues/254    
+    # does not handle interleaved
     special_read_type = " "
     if single:
         special_read_type = "--single-end"
     if paired and single:
+        # https://github.com/bxlab/metaWRAP/issues/254    
         reads = [r for r in reads if not str(r).split(".")[-2].endswith("_2")]
 
     #################################################################################
@@ -151,7 +151,7 @@ def example_procedure(context: JobContext) -> JobResult:
 
     TAB = '\t'
     stats_file = context.output_folder.joinpath(f"{name}.stats")
-    with open(refine_out.joinpath("metawrap_50_5_bins.stats")) as original:
+    with open(refine_out.joinpath(f"metawrap_{COMPLETION}_{CONTAMINATION}_bins.stats")) as original:
         with open(stats_file, 'w') as stats:
             header = original.readline()
             stats.write(header)
