@@ -11,6 +11,8 @@ V_WORK        = Item('metagenomic find virus work')
 
 CONTAINER   = 'virsorter.sif'
 REF_DB      = 'virsorter_db'
+REF_SRC     = 'virsorter_src'
+# REF_DB      = 'virsorter_db.tgz'
 PIGZ        = 'pigz'
 
 def procedure(context: JobContext) -> JobResult:
@@ -24,6 +26,16 @@ def procedure(context: JobContext) -> JobResult:
     asm = M[ASM]
     assert isinstance(asm, Path), f"expected path for asm, got [{asm}]"
 
+    # ref_db = REF.joinpath(REF_DB)
+    # if f"{ref_db}".endswith("gz"):
+    #     ref_redirect = WS.joinpath(f"{TEMP}_db")
+    #     context.shell(f"""\
+    #         {pigz} -dc {ref_db} | tar -xf - -C {ref_redirect}
+    #     """)
+    # else:
+    #     ref_redirect = REF
+    ref_redirect = REF
+
     asm_dir = os.path.join(*asm.parts[:-1])
     asm_file = asm.name
     asm_name = ".".join(asm.name.split(".")[:-1])
@@ -32,7 +44,8 @@ def procedure(context: JobContext) -> JobResult:
         "fa", "scores.tsv", "bounds.tsv", "work.tgz"
     ]]
     binds = [
-        f"{REF}/:/ref",
+        f"{ref_redirect}:/ref",
+        f"{REF.joinpath(REF_SRC)}:/VirSorter2/virsorter",
         f"{asm_dir}:/in",
         f"{WS}:/ws",
     ]
@@ -67,7 +80,7 @@ MODULE = ModuleBuilder()\
     .PromiseOutput(V_SCORES)\
     .PromiseOutput(V_LOCS)\
     .PromiseOutput(V_WORK)\
-    .Requires({CONTAINER, REF_DB, PIGZ})\
+    .Requires({CONTAINER, REF_DB, REF_SRC, PIGZ})\
     .SuggestedResources(threads=4, memory_gb=8)\
     .SetHome(__file__, name=None)\
     .Build()
