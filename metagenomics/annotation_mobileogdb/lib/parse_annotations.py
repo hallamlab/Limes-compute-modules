@@ -1,7 +1,8 @@
-import os, sys
-import pandas as pd
-
 if __name__ == "__main__":
+
+    import os, sys
+    import pandas as pd
+
     tsv, raw_columns, ref, out = sys.argv[1:]
     columns = raw_columns.split(";")
 

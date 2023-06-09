@@ -1,8 +1,8 @@
-import os, sys
-import pandas as pd
-import sqlite3
-
 if __name__ == "__main__":
+    import os, sys
+    import pandas as pd
+    import sqlite3
+    
     tsv, raw_columns, ref, out_annots, out_groups = sys.argv[1:]
 
     columns = raw_columns.split(";")
