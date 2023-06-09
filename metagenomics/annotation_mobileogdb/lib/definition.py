@@ -56,7 +56,7 @@ MODULE = ModuleBuilder()\
     .AddInput(ORFS, groupby=None)\
     .PromiseOutput(ANNOTATIONS)\
     .PromiseOutput(HITS)\
-    .Requires({CONTAINER, DB})\
+    .Requires({CONTAINER, PY, DB, KB})\
     .SuggestedResources(threads=8, memory_gb=8)\
     .SetHome(__file__, name=None)\
     .Build()
