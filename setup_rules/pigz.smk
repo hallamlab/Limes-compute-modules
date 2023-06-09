@@ -20,3 +20,26 @@ rule compile_pigz:
         && chmod +x pigz && cp pigz ../ && cd ../ && rm -rf pigz_lib \
         && rm {input}
         """
+
+rule pigz_unzip:
+    input:
+        zipped="{file}.gz",
+        pigz=PIGZ
+    output:
+        "{file}"
+    threads: 2
+    shell:
+        """
+        {input.pigz} -dc -k -p {threads} {input.zipped} >{output}
+        """
+
+# rule pigz_untar:
+#     input:
+#         zipped="{file}.tar.gz",
+#         pigz=PIGZ
+#     output:
+#         "{file}"
+#     shell:
+#         """
+#         {input.pigz} -dc -k {input.zipped} | tar xf -
+#         """

@@ -1,0 +1,1 @@
+../../annotation_mobileogdb/lib/diamond.py

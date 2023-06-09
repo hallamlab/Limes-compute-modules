@@ -6,7 +6,7 @@ SAMPLE      = Item('sra accession')
 BIN         = Item('metagenomic bin')
 
 MP3_WS      = Item('metapathways work')
-ANNOTATIONS = Item('genomic annotation')
+ANNOTATIONS = Item('annotation by metapathways')
 
 CONTAINER   = 'metapathways.sif'
 MP3_DB      = 'metapathways_db'

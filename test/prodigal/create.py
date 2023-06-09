@@ -7,6 +7,6 @@ import limes_x as lx
 
 lx.ModuleBuilder.GenerateTemplate(
     modules_folder="../../metagenomics",
-    name="find_viruses",
+    name="orf_prediction",
     on_exist="skip",
 )
