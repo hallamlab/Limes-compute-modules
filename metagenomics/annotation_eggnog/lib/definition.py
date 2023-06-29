@@ -58,6 +58,6 @@ MODULE = ModuleBuilder()\
     .PromiseOutput(ANNOTATIONS)\
     .PromiseOutput(HITS)\
     .Requires({CONTAINER, PY, DB, KB})\
-    .SuggestedResources(threads=8, memory_gb=8)\
+    .SuggestedResources(threads=16, memory_gb=160)\
     .SetHome(__file__, name=None)\
     .Build()
