@@ -19,7 +19,7 @@ def RunDiamond(orfs: Path, db: Path, out_dir: Path, diamond_sif: Path, shell: Ca
 
     key = f"{name}.{db_name}"
     table_file = f"{key}.hits.tsv"
-    columns = f"qseqid stitle qstart qend nident pident evalue".split(" ")
+    columns = f"qseqid sseqid qstart qend nident pident evalue".split(" ")
     # --very-sensitive is nearly as accurate as blastp but 300x faster
     # https://bmcgenomics.biomedcentral.com/articles/10.1186/s12864-020-07132-6
     # https://www.nature.com/articles/s41592-021-01101-x/figures/1

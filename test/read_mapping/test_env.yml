@@ -1,0 +1,10 @@
+# name: test_rmap
+name: read_mapping
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - python=3.11
+  - kallisto
+  - coverm
+  - conda-forge::ncurses # for error: /home/tony/Utilities/mambaforge/envs/test_rmap/bin/../lib/libncursesw.so.6: no version information available
