@@ -27,7 +27,7 @@ def procedure(context: JobContext) -> JobResult:
     sample = re.sub(r'[^\w]+', "_", str(sample))
 
     assembler_name = M[ASSEMBLER]
-    ASM_CHOICES = {"megahit", "spades"}
+    ASM_CHOICES = {"megahit", "spades_meta", "spades_isolate", "spades_sc"}
     assert assembler_name in ASM_CHOICES, f"assembler must be one of: {'/'.join(ASM_CHOICES)}, but got {assembler_name}"
 
     reads = M[HITS]
