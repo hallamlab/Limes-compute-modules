@@ -5,7 +5,7 @@ from limes_x import JobContext, JobResult
 VERSION     = "207_v2"
 GTDBTK_DB   = f"gtdbtk_r{VERSION}_data.tar.gz"
 
-def gtdbtk_procedure(context: JobContext, SAMPLE, BINS, GTDBTK_WS, GTDBTK_TAX, CONTAINER, GTDBTK_DB) -> JobResult:
+def gtdbtk_procedure(context: JobContext, SAMPLE, BINS, GTDBTK_WS, GTDBTK_TAX, CONTAINER, GTDBTK_DB, PIGZ) -> JobResult:
     manifest = context.manifest
     params = context.params
     ref = params.reference_folder
@@ -103,8 +103,12 @@ def gtdbtk_procedure(context: JobContext, SAMPLE, BINS, GTDBTK_WS, GTDBTK_TAX, C
 
 
     #clean up
+    pigz = ref.joinpath(PIGZ)
+    out_folder_name = out_folder.name
     context.shell(f"""\
-        cd {context.output_folder} && rm -r {TEMP_PREFIX}*
+        cd {context.output_folder}
+        tar -cf - {out_folder_name} | {pigz} -7 -p {params.threads} >{out_folder_name}.tar.gz && rm -r {out_folder_name}
+        rm -r {TEMP_PREFIX}*
     """)
 
     return JobResult(
