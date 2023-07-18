@@ -86,7 +86,7 @@ def procedure(context: JobContext) -> JobResult:
         if "\t" in toks: toks = toks.split("\t")
         else: toks = [t for t in toks.split(" ") if len(t)>0]
         num_reads, nucleotides = toks
-        if int(nucleotides)/int(num_reads) > 600:
+        if int(nucleotides)/int(num_reads) > 10_000:
             is_short_read = False
 
     if is_short_read:
