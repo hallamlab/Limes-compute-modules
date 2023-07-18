@@ -79,7 +79,7 @@ def procedure(context: JobContext) -> JobResult:
     num_reads, nucleotides = 0, 0
     for r in reads:
         context.shell(f"""\
-            {context.params.reference_folder.joinpath(PIGZ)} -p {params.threads} -dc {reads[0]} \
+            {context.params.reference_folder.joinpath(PIGZ)} -p {params.threads} -dc {r} \
             | awk 'NR % 4 == 2' \
             | wc -cl >{read_sizes} \
         """)
