@@ -1,5 +1,7 @@
 import os
 from pathlib import Path
+
+from numpy import short
 from limes_x import ModuleBuilder, Item, JobContext, JobResult
 
 SAMPLE      = Item('sra accession')
@@ -74,20 +76,23 @@ def procedure(context: JobContext) -> JobResult:
 
     #https://bioinformatics.stackexchange.com/questions/935/fast-way-to-count-number-of-reads-and-number-of-bases-in-a-fastq-file
     read_sizes = context.output_folder.joinpath("temp.readcount.txt")
-    context.shell(f"""\
-        {context.params.reference_folder.joinpath(PIGZ)} -p {params.threads} -dc {reads[0]} \
-        | awk 'NR % 4 == 2' \
-        | wc -cl >{read_sizes} \
-    """)
+    num_reads, nucleotides = 0, 0
+    for r in reads:
+        context.shell(f"""\
+            {context.params.reference_folder.joinpath(PIGZ)} -p {params.threads} -dc {reads[0]} \
+            | awk 'NR % 4 == 2' \
+            | wc -cl >{read_sizes} \
+        """)
+        with open(read_sizes) as f:
+            toks = f.readline()[:-1].strip()
+            if "\t" in toks: toks = toks.split("\t")
+            else: toks = [t for t in toks.split(" ") if len(t)>0]
+            nr, nuc = [int(t) for t in toks]
+            num_reads += nr
+            nucleotides += nuc
 
-    is_short_read = True
-    with open(read_sizes) as f:
-        toks = f.readline()[:-1].strip()
-        if "\t" in toks: toks = toks.split("\t")
-        else: toks = [t for t in toks.split(" ") if len(t)>0]
-        num_reads, nucleotides = toks
-        if int(nucleotides)/int(num_reads) > 10_000:
-            is_short_read = False
+    # todo: use metadata from sra
+    is_short_read = nucleotides/num_reads < 10_000
 
     if is_short_read:
         exe_cmd, assembler = _megahit(reads)
