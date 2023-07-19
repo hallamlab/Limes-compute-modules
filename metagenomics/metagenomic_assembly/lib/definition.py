@@ -91,7 +91,7 @@ def procedure(context: JobContext) -> JobResult:
             nucleotides += nuc
 
     # todo: use metadata from sra
-    is_short_read = nucleotides/num_reads < 10_000
+    is_short_read = nucleotides/num_reads < 5_000
 
     if is_short_read:
         exe_cmd, assembler = _megahit(reads)
