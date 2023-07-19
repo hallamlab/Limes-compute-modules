@@ -1,7 +1,6 @@
 import os
 from pathlib import Path
 
-from numpy import short
 from limes_x import ModuleBuilder, Item, JobContext, JobResult
 
 SAMPLE      = Item('sra accession')

@@ -3,7 +3,7 @@
 date
 
 singularity exec -B ./cache:/ws ./cache/fastqc.sif \
-    fastqc --noextract -o /ws /ws/SRR10140508_1.fastq.gz
+    fastqc --noextract -o /ws /ws/SRR10140508_1.fastq.gz /ws/SRR10140508_2.fastq.gz
 
 date
 # singularity run ../../../lx_ref/diamond.sif \
