@@ -100,6 +100,7 @@ def procedure(context: JobContext) -> JobResult:
     code = context.shell(f"""\
         PYTHONPATH=""
         {exe_cmd}
+        rm {read_sizes}
     """)
 
     return JobResult(
