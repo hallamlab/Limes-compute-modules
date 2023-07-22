@@ -34,7 +34,7 @@ def procedure(context: JobContext) -> JobResult:
     for acc in accession_list:
         context.shell(f"""\
             singularity run -B {",".join(binds)} {container} \
-                prefetch --output-directory /ws/ {acc}
+                prefetch --max-size 200g --output-directory /ws/ {acc}
         """)
 
     # clean up
