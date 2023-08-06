@@ -66,6 +66,7 @@ def example_procedure(context: JobContext) -> JobResult:
             mv {out_name}/{out_dir}/orf_prediction/* {result}/
             mv {out_name}/{out_dir}/results/* {result}/
             mv {out_name}/{out_dir}/ptools/0.pf {result}/ptools_input.pf
+            mv {out_name}/{out_dir}/preprocessed/*.mapping.txt {result}/
             tar -cf - {result} | {pigz} -7 -p {params.threads} >{result_zip} && rm -r {result}
         """)
         code = max(1, _code+code)
