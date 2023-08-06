@@ -15,7 +15,7 @@ MODULE = ModuleBuilder()\
     .AddInput(BINS, groupby=SAMPLE)\
     .PromiseOutput(GTDBTK_WS)\
     .PromiseOutput(GTDBTK_TAX)\
-    .SuggestedResources(threads=1, memory_gb=48)\
+    .SuggestedResources(threads=2, memory_gb=48)\
     .Requires({CONTAINER, GTDBTK_DB})\
     .SetHome(__file__, name=None)\
     .Build()
