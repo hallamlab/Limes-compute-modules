@@ -104,6 +104,7 @@ def gtdbtk_procedure(context: JobContext, SAMPLE, BINS, GTDBTK_WS, GTDBTK_TAX, C
 
     #clean up
     pigz = ref.joinpath(PIGZ)
+    zipped_ws = Path(f"{out_folder}.tar.gz")
     out_folder_name = out_folder.name
     context.shell(f"""\
         cd {context.output_folder}
@@ -113,7 +114,7 @@ def gtdbtk_procedure(context: JobContext, SAMPLE, BINS, GTDBTK_WS, GTDBTK_TAX, C
 
     return JobResult(
         manifest = {
-            GTDBTK_WS: out_folder,
+            GTDBTK_WS: zipped_ws,
             GTDBTK_TAX: summary,
         },
     )
